@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.herong.demo.dao.PostgraduateInfoDao">
+  <resultMap id="BaseResultMap" type="com.herong.demo.domain.PostgraduateInfo">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="year" jdbcType="VARCHAR" property="year" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="class" jdbcType="VARCHAR" property="classify" />
+    <result column="subject_code" jdbcType="VARCHAR" property="subjectCode" />
+    <result column="subject" jdbcType="VARCHAR" property="subject" />
+    <result column="sum_score" jdbcType="VARCHAR" property="sumScore" />
+    <result column="one" jdbcType="VARCHAR" property="one" />
+    <result column="two" jdbcType="VARCHAR" property="two" />
+    <result column="three" jdbcType="VARCHAR" property="three" />
+    <result column="four" jdbcType="VARCHAR" property="four" />
+    <result column="gmt_create" jdbcType="TIMESTAMP" property="gmtCreate" />
+    <result column="gmt_modify" jdbcType="TIMESTAMP" property="gmtModify" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, year, name, class, subject_code, subject, sum_score, one, two, three, four, gmt_create, 
+    gmt_modify
+  </sql>
+  <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from py_ky_info
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="delete" parameterType="java.lang.Long">
+    delete from py_ky_info
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.herong.demo.domain.PostgraduateInfo">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into py_ky_info (year, name, class, 
+      subject_code, subject, sum_score, 
+      one, two, three, four, 
+      gmt_create, gmt_modify)
+    values (#{year,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{classify,jdbcType=VARCHAR},
+      #{subjectCode,jdbcType=VARCHAR}, #{subject,jdbcType=VARCHAR}, #{sumScore,jdbcType=VARCHAR}, 
+      #{one,jdbcType=VARCHAR}, #{two,jdbcType=VARCHAR}, #{three,jdbcType=VARCHAR}, #{four,jdbcType=VARCHAR}, 
+      #{gmtCreate,jdbcType=TIMESTAMP}, #{gmtModify,jdbcType=TIMESTAMP})
+  </insert>
+  <update id="update" parameterType="com.herong.demo.domain.PostgraduateInfo">
+    update py_ky_info
+    <set>
+      gmt_modify = now(),
+      <if test="year != null">
+        year = #{year,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="classify != null">
+        class = #{classify,jdbcType=VARCHAR},
+      </if>
+      <if test="subjectCode != null">
+        subject_code = #{subjectCode,jdbcType=VARCHAR},
+      </if>
+      <if test="subject != null">
+        subject = #{subject,jdbcType=VARCHAR},
+      </if>
+      <if test="sumScore != null">
+        sum_score = #{sumScore,jdbcType=VARCHAR},
+      </if>
+      <if test="one != null">
+        one = #{one,jdbcType=VARCHAR},
+      </if>
+      <if test="two != null">
+        two = #{two,jdbcType=VARCHAR},
+      </if>
+      <if test="three != null">
+        three = #{three,jdbcType=VARCHAR},
+      </if>
+      <if test="four != null">
+        four = #{four,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <select id="queryByPage" parameterType="com.herong.demo.domain.query.PostgraduateInfoQuery" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from py_ky_info
+    <trim prefix="where" prefixOverrides="and|or">
+      <if test="year != null and year.length()>0">
+        and year = #{year,jdbcType=VARCHAR}
+      </if>
+      <if test="name != null and name.length()>0">
+        and name like concat ('%',#{name},'%')
+      </if>
+      <if test="subject != null and subject.length()>0">
+        and subject = #{subject,jdbcType=VARCHAR}
+      </if>
+    </trim>
+    order by gmt_create desc
+  </select>
+
+  <select id="recommendTop10" parameterType="com.herong.demo.domain.query.PostgraduateInfoQuery" resultMap="BaseResultMap">
+    select
+      name, class, subject_code, subject, AVG(sum_score) as sum_score
+    from py_ky_info
+    <trim prefix="where" prefixOverrides="and|or">
+      <if test="year != null and year.length()>0">
+        and year = #{year,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null and name.length()>0">
+        and name like concat ('%',#{name},'%')
+      </if>
+      <if test="subject != null and subject.length()>0">
+        and subject like concat ('%',#{subject},'%')
+      </if>
+    </trim>
+    group by name,subject
+    HAVING AVG(sum_score) &lt;= #{sumScore,jdbcType=VARCHAR}
+    order by AVG(sum_score) desc limit 10
+  </select>
+</mapper>
